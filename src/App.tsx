@@ -6,11 +6,11 @@ function App() {
 
   return (
     <>
-      <h2>Start</h2>
-      <SortableExampleStart />
-      <hr />
       <h2>End</h2>
       <DndKitEnd />
+      <hr />
+      <h2>Start</h2>
+      <SortableExampleStart />
     </>
   )
 }

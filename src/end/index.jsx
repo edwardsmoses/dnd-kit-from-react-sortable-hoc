@@ -1,47 +1,76 @@
 import React from 'react';
-import { sortableContainer, sortableElement } from 'react-sortable-hoc';
-import {arrayMoveImmutable} from 'array-move';
 
-const SortableItem = sortableElement(({ value }) => <li>{value}</li>);
+import {
+    DndContext,
+    useSensors,
+    useSensor,
+    PointerSensor,
+    closestCenter,
+} from "@dnd-kit/core";
 
-const SortableContainer = sortableContainer(({ children }) => {
-    return <div>{children}</div>;
-});
+import {
+    arrayMove,
+    SortableContext,
+    useSortable,
+    verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
-export const DndKitEnd = () => {
+import { CSS } from "@dnd-kit/utilities";
 
-    const [collections, setCollections] = React.useState([[0, 1, 2], [0, 1, 2, 3, 4], [0, 1, 2]]);
+const SortableItem = ({ id, value }) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({ id: id });
 
-    const onSortEnd = ({ oldIndex, newIndex, collection }) => {
-        setCollections((prev) => {
-            const newCollections = [...prev];
-            newCollections[collection] = arrayMoveImmutable(
-                collections[collection],
-                oldIndex,
-                newIndex,
-            );
-            return newCollections;
-        })
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
     };
 
     return (
-        <SortableContainer onSortEnd={onSortEnd}>
-            {collections.map((items, index) => (
-                <React.Fragment key={index}>
-                    <strong>LIST {index}</strong>
-                    <ul>
-                        {items.map((item, i) => (
-                            <SortableItem
-                                key={item}
-                                value={`Item ${item}`}
-                                index={i}
-                                collection={index}
-                            />
-                        ))}
-                    </ul>
-                </React.Fragment>
-            ))}
-        </SortableContainer>
+        <li ref={setNodeRef} {...attributes} {...listeners} style={style}>
+            Item {value}
+        </li>
+    );
+};
+
+export const DndKitEnd = () => {
+
+    const [collections, setCollections] = React.useState([0, 1, 2, 3, 4]);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+    );
+
+    const onSortEnd = (event) => {
+        const { active, over } = event;
+        if (active?.id !== over?.id) {
+            setCollections((prev) => {
+                const activeIndex = prev.findIndex((item) => item === active?.id);
+                const overIndex = prev.findIndex((item) => item === over?.id);
+                return arrayMove(prev, activeIndex, overIndex);
+            });
+        }
+    };
+
+    return (
+        <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={onSortEnd}
+        >
+            <SortableContext items={collections} strategy={verticalListSortingStrategy}>
+                <ul>
+                    {collections.map((item) => (
+                        <SortableItem id={item} key={item} value={item} />
+                    ))}
+                </ul>
+            </SortableContext>
+        </DndContext>
     )
 }
 
