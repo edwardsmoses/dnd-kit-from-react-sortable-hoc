@@ -1,14 +1,16 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { SortableExampleStart } from "./start/";
+import { DndKitEnd } from "./end/";
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
-      
+      <h2>Start</h2>
+      <SortableExampleStart />
+      <hr />
+      <h2>End</h2>
+      <DndKitEnd />
     </>
   )
 }
